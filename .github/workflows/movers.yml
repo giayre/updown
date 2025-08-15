@@ -56,7 +56,7 @@ jobs:
           RESEND_DELTA_UP: "100"        # gửi lại nếu vượt thêm 5 điểm % so với mốc đã gửi
           RESEND_DELTA_DOWN: "10"
           STATE_PATH: ".state/alerts_state.json"
-          STATE_RETENTION_DAYS: "3"   # giữ 3 ngày gần nhất (0 = không dọn)
+          STATE_RETENTION_DAYS: "7"   # giữ 3 ngày gần nhất (0 = không dọn)
           DEBUG_DEDUP: "false"        # "true" để in log dedup
 
           # === Dành cho CoinGecko (khi DATA_SOURCE=auto/gecko) ===
