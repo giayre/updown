@@ -2,7 +2,7 @@ name: Movers Alerts
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # chạy mỗi 30 phút (đổi thành */5 nếu muốn 5 phút)
+    - cron: "0 * * * *"   # chạy mỗi 30 phút (đổi thành */5 nếu muốn 5 phút)
   workflow_dispatch:
 
 permissions:
