@@ -1,0 +1,82 @@
+name: Movers Alerts
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # chạy mỗi 30 phút (đổi thành */5 nếu muốn 5 phút)
+  workflow_dispatch:
+
+permissions:
+  contents: write            # cần để commit file state chống trùng
+
+concurrency:
+  group: movers-alerts
+  cancel-in-progress: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Run script
+        env:
+          # === BẮT BUỘC: đặt trong Settings → Secrets and variables → Actions ===
+          TELEGRAM_TOKEN:   ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+          # === Nguồn & ngưỡng phần trăm ===
+          DATA_SOURCE: "paprika"      # "auto" | "paprika" | "gecko"
+          UP_THRESHOLD: "100"
+          DOWN_THRESHOLD: "-10"
+
+          # === Lọc thanh khoản & vốn hoá ===
+          MIN_VOLUME_24H: "2000000"   # 2M USD; 0 = tắt lọc
+          SHOW_VOLUME: "true"
+          MIN_MARKET_CAP: "50000000"  # 50M USD; 0 = tắt lọc dưới
+          MAX_MARKET_CAP: "0"         # 0 = không giới hạn trên
+          SHOW_MARKET_CAP: "true"
+
+          # === Cách gửi & giới hạn ===
+          SEND_PER_COIN: "true"       # "true" = mỗi coin 1 tin; "false" = gộp 1 tin
+          MAX_ITEMS_PER_RUN: "60"
+          MAX_DOWN_ITEMS: "60"
+          MAX_UP_ITEMS: "60"
+
+          # === Icon (emoji màu) ===
+          UP_ICON: "🟢⬆️"
+          DOWN_ICON: "🔻"
+
+          # === Chống trùng (dedup) ===
+          RESEND_DELTA_UP: "5"        # gửi lại nếu vượt thêm 5 điểm % so với mốc đã gửi
+          RESEND_DELTA_DOWN: "5"
+          STATE_PATH: ".state/alerts_state.json"
+          STATE_RETENTION_DAYS: "3"   # giữ 3 ngày gần nhất (0 = không dọn)
+          DEBUG_DEDUP: "false"        # "true" để in log dedup
+
+          # === Dành cho CoinGecko (khi DATA_SOURCE=auto/gecko) ===
+          GECKO_PAGES: "1"
+          GECKO_PER_PAGE: "250"
+          GECKO_BACKOFF_MS: "1200"
+        run: node movers.js
+
+      # Tự commit file state nếu có thay đổi (an toàn, không fail khi không có thay đổi)
+      - name: Commit state (if changed)
+        run: |
+          set +e
+          CHANGED=$(git status --porcelain | grep -c ".state/alerts_state.json" || true)
+          set -e
+          if [ "$CHANGED" -gt 0 ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .state/alerts_state.json
+            git commit -m "chore(state): update alerts_state [skip ci]" || true
+            git push
+          else
+            echo "No state changes."
+          fi
