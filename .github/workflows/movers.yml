@@ -33,12 +33,12 @@ jobs:
           # === Nguồn & ngưỡng phần trăm ===
           DATA_SOURCE: "paprika"      # "auto" | "paprika" | "gecko"
           UP_THRESHOLD: "100"
-          DOWN_THRESHOLD: "-10"
+          DOWN_THRESHOLD: "-50"
 
           # === Lọc thanh khoản & vốn hoá ===
           MIN_VOLUME_24H: "2000000"   # 2M USD; 0 = tắt lọc
           SHOW_VOLUME: "true"
-          MIN_MARKET_CAP: "50000000"  # 50M USD; 0 = tắt lọc dưới
+          MIN_MARKET_CAP: "30000000"  # 50M USD; 0 = tắt lọc dưới
           MAX_MARKET_CAP: "0"         # 0 = không giới hạn trên
           SHOW_MARKET_CAP: "true"
 
@@ -49,12 +49,12 @@ jobs:
           MAX_UP_ITEMS: "60"
 
           # === Icon (emoji màu) ===
-          UP_ICON: "🟢⬆️"
+          UP_ICON: "✅"
           DOWN_ICON: "🔻"
 
           # === Chống trùng (dedup) ===
-          RESEND_DELTA_UP: "5"        # gửi lại nếu vượt thêm 5 điểm % so với mốc đã gửi
-          RESEND_DELTA_DOWN: "5"
+          RESEND_DELTA_UP: "100"        # gửi lại nếu vượt thêm 5 điểm % so với mốc đã gửi
+          RESEND_DELTA_DOWN: "10"
           STATE_PATH: ".state/alerts_state.json"
           STATE_RETENTION_DAYS: "3"   # giữ 3 ngày gần nhất (0 = không dọn)
           DEBUG_DEDUP: "false"        # "true" để in log dedup
